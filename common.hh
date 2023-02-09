@@ -31,7 +31,7 @@ private:
 };
 
 template <typename... Args>
-std::string MyFormat(std::string_view formatStr, Args&&... args) {
+std::string Format(std::string_view formatStr, Args&&... args) {
   if constexpr (sizeof...(Args) == 0) {
     return std::string{formatStr};
   }
@@ -39,7 +39,7 @@ std::string MyFormat(std::string_view formatStr, Args&&... args) {
     throw std::runtime_error(
         "Number of arguments doesn't match number of replacement spots");
   }
-  auto replacements = {ToString(args)...};
+  auto replacements = {ToString(std::forward<Args>(args))...};
   auto currentReplacement = replacements.begin();
   std::ostringstream result;
   for (auto c : formatStr) {
@@ -53,6 +53,7 @@ std::string MyFormat(std::string_view formatStr, Args&&... args) {
   return result.str();
 }
 
+// TODO: this should go into a meta header
 template<typename T>
 constexpr inline const char* TypeStr = "unknown";
 
@@ -78,6 +79,7 @@ DECL_TYPESTR(long double)
 
 #undef DECL_TYPESTR
 
+// TODO: test & bench header
 struct TimeStat {
   double avg;
   double min;
