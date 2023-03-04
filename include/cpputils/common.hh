@@ -6,6 +6,13 @@
 
 namespace utils {
 
+template <typename T>
+std::string ToString(const T& x) {
+  std::ostringstream os;
+  os << x;
+  return os.str();
+}
+
 template <typename... Args>
 std::string Format(std::string_view formatStr, Args&&... args) {
   if constexpr (sizeof...(Args) == 0) {
@@ -31,16 +38,16 @@ std::string Format(std::string_view formatStr, Args&&... args) {
 
 class MakeString {
 public:
-    template<class T>
-    MakeString& operator<< (const T& arg) {
-        ss << arg;
-        return *this;
-    }
-    operator std::string() const {
-        return ss.str();
-    }
+  template<class T>
+  MakeString& operator<< (const T& arg) {
+    ss << arg;
+    return *this;
+  }
+  operator std::string() const {
+    return ss.str();
+  }
 private:
-    std::stringstream ss;
+  std::stringstream ss;
 };
 
 } // namespace utils

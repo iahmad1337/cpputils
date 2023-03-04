@@ -10,13 +10,6 @@ namespace detail {
   inline const std::unordered_set WS = {' ', '\f', '\n', '\r', '\t', '\v'};
 }  // namespace utils::detail
 
-template <typename T>
-std::string ToString(const T& x) {
-  std::ostringstream os;
-  os << x;
-  return os.str();
-}
-
 /*******************************************************************************
 *                                    Trim                                     *
 *******************************************************************************/
