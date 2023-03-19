@@ -70,6 +70,16 @@ inline std::string Join(std::string_view sep, ItBegin begin, ItEnd end) {
   return result;
 }
 
+template<typename Container>
+inline std::string Join(const Container& cont, std::string_view sep = ", ") {
+  return Join(sep, cont.begin(), cont.end());
+}
+
+template<typename T>
+inline std::string Join(std::initializer_list<T> l, std::string_view sep = ", ") {
+  return Join(sep, l.begin(), l.end());
+}
+
 /*******************************************************************************
 *                                   Replace                                   *
 *******************************************************************************/

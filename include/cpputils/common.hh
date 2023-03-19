@@ -50,4 +50,14 @@ private:
   std::stringstream ss;
 };
 
+template <typename T, typename U>
+bool OneOf(T val, std::initializer_list<U> list) {
+  return std::find(list.begin(), list.end(), val) != list.end();
+}
+
+template <typename T, typename Container>
+bool OneOf(T val, const Container& c) {
+  return std::find(c.begin(), c.end(), val) != c.end();
+}
+
 } // namespace utils
