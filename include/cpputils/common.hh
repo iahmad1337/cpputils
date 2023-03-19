@@ -18,17 +18,25 @@ std::string Format(std::string_view formatStr, Args&&... args) {
   if constexpr (sizeof...(Args) == 0) {
     return std::string{formatStr};
   }
-  if (std::count(formatStr.begin(), formatStr.end(), '%') != sizeof...(Args)) {
-    throw std::runtime_error(
-        "Number of arguments doesn't match number of replacement spots");
-  }
   auto replacements = {ToString(std::forward<Args>(args))...};
   auto currentReplacement = replacements.begin();
   std::ostringstream result;
+  bool skip{false};
   for (auto c : formatStr) {
+    if (skip) {
+      skip = false;
+      result << c;
+      continue;
+    }
     if (c == '%') {
+      if (currentReplacement == replacements.end()) {
+        throw std::runtime_error(
+            "Number of arguments doesn't match number of replacement spots");
+      }
       result << *currentReplacement;
       currentReplacement++;
+    } else if (c == '\\') {
+      skip = true;
     } else {
       result << c;
     }
