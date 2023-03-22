@@ -15,7 +15,7 @@ namespace detail {
 *******************************************************************************/
 
 inline std::string Trim(const std::string& s, const std::unordered_set<char>& trimmedChars) {
-  const auto isNotTrimmedChar = [&trimmedChars](char c) { return trimmedChars.find(c) != trimmedChars.end(); };
+  const auto isNotTrimmedChar = [&trimmedChars](char c) { return trimmedChars.find(c) == trimmedChars.end(); };
   const auto begin = std::find_if(s.begin(), s.end(), isNotTrimmedChar);
   const auto end = std::find_if(s.rbegin(), s.rend(), isNotTrimmedChar).base();
   std::string result;
