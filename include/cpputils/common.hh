@@ -15,6 +15,10 @@ std::string ToString(const T& x) {
 
 template <typename... Args>
 std::string Format(std::string_view formatStr, Args&&... args) {
+  constexpr static auto REPORT_MISMATCH = [] () {
+    throw std::runtime_error(
+        "Number of arguments doesn't match number of replacement spots");
+  };
   if constexpr (sizeof...(Args) == 0) {
     return std::string{formatStr};
   }
@@ -30,8 +34,7 @@ std::string Format(std::string_view formatStr, Args&&... args) {
     }
     if (c == '%') {
       if (currentReplacement == replacements.end()) {
-        throw std::runtime_error(
-            "Number of arguments doesn't match number of replacement spots");
+        REPORT_MISMATCH();
       }
       result << *currentReplacement;
       currentReplacement++;
@@ -40,6 +43,9 @@ std::string Format(std::string_view formatStr, Args&&... args) {
     } else {
       result << c;
     }
+  }
+  if (currentReplacement != replacements.end()) {
+    REPORT_MISMATCH();
   }
   return result.str();
 }
