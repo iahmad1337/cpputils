@@ -1,5 +1,5 @@
 # What is this
-This is a collection of utilities that I oftenly use in my
+This is a collection of utilities that I sometimes use in my
 projects. Often I just want to get the shit done and I don't care about the
 performance, so the code here may not be optimal (but serves its purpose
 well enough). I might consider speeding up some of the code in the future,
@@ -17,18 +17,41 @@ the code here
     it the default allocator. It could be useful to limit the memory used by
     application and also for tracking the memory usage (allocations can be
     logged).
-  - binary serialization (a good cppcon talk on this topic:
-    https://youtu.be/G7-GQhCw8eE)
 
-# Good libraries that I definetely don't want to reimplement
-- https://www.boost.org/doc/libs/master/doc/html/stacktrace.html
-- https://github.com/p-ranav/pprint
-- https://github.com/oneapi-src/oneTBB
-- https://github.com/chriskohlhoff/asio
-- https://github.com/nlohmann/json
-- https://github.com/fmtlib/fmt
-- https://github.com/ericniebler/range-v3
-- https://github.com/gabime/spdlog
-- https://github.com/p-ranav/argparse
-- regex: https://t.me/experimentalchill/151
-- re2
+# TODO
+- Script that dumps all of the library into a single file (codegen, see
+  translation methods lab for example)
+    - The order of files can be hardcoded
+    - All of `#pragma once` should be removed and all include files should move
+      to the beginning. Also, remove duplicates
+    - The resulting generated file must be included in git
+    - There should be a test, that tells whether all files from `include` and
+      `src` were included. It shouldn't ever be manually modified
+- `ReadFile`, `WriteFile`
+- `EXPECT` macro: `#define EXPECT(cond, message) if (!(cond)) { throw std::runtime_error(utils::Format(__FILE__ ":% %", __LINE__, message)); }`
+- Pretty print for nested containers (based on `std::cbegin` and the like)
+  with/without indentation
+- Scoped file (or stderr/stdout) logger
+- Indent/Dedent
+- Universal hash for any ordered collection?
+- Type info wrapper with `__PRETTY_FUNCTION__` hack
+- Enum serialization??? Might be possible with macro definition and constexpr
+  functions
+- `std::vector<bool>` done right (i.e. `boost::dynamic_bitset`)
+- Self-made range-adapters that mutate or don't mutate the stored range and can
+  have chained method calls! This way we won't have to worry about any
+  lifetimes.
+  Reference methods: sort, unique, join, sum, minmax, count, groupby,
+  frequencies, are_distinct, nth, sliding_window,  and other popular algorithms.
+  Take inspiration from Java Stream API, python itertools, toolz, topk, etc.
+- Intrusive splay tree implementation from my bimap??
+- The actual bimap??
+- Set of functors like square, cube, power, hash. Along with it - a bundle of
+  utilities that help with functional programming:
+    - `utils::functional::Compose(f1, f2, ...)`
+    - `utils::functional::Bind(PH, 42, PH, "hello")`
+    - `utils::functional::???`
+- `utils::Pipe(auto)` + `utils::Pipe operator|(utils::Pipe, auto)`
+- Determine, whether it's possible to make a macro like `NAMED_TUPLE(f1, f2, ...)`.
+- Sparse bitset implementation plus set operations (intersection, union,
+  difference)
