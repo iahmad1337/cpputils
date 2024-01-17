@@ -55,3 +55,16 @@ the code here
 - Determine, whether it's possible to make a macro like `NAMED_TUPLE(f1, f2, ...)`.
 - Sparse bitset implementation plus set operations (intersection, union,
   difference)
+- Home dir: https://github.com/ospray/rkcommon/blob/master/rkcommon/os/FileName.cpp#L40
+
+## utils::math
+- Matrices that are stored in blocks
+- Tricks from hacker's delight
+
+## Short-term plan
+- Add test targets to CMakeLists.txt
+- Write a python script that concatenates all source files into one large header
+    - All `#include "..."` lines should be removed
+
+## Short-term bonus
+- Add a gbench

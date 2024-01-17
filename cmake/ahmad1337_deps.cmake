@@ -25,7 +25,7 @@ endmacro()
 
 if (USE_GTEST)
     AddUrlLib(
-        gtest
+        GTest
         https://github.com/google/googletest/archive/refs/heads/main.zip
         )
 endif()
