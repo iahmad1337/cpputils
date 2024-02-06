@@ -1,7 +1,8 @@
 #pragma once
 
+#include <cpputils/common.hh>
+
 #include <exception>
-#include "common.hh"
 
 #define EXPECT(cond, message) \
   if (!(cond)) { \

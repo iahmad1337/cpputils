@@ -1,13 +1,15 @@
 #pragma once
 
+#include <cpputils/debug.hh>
+
 #include <cstdint>
 #include <vector>
 
-#include "debug.hh"
-
 namespace utils {
 
-uint64_t mul8x8gf2 (uint64_t A, uint64_t B) {
+namespace gf2 {
+
+uint64_t mul8x8 (uint64_t A, uint64_t B) {
     // https://stackoverflow.com/a/55307540
 
     static const uint64_t ROW = 0x00000000000000FF;  // lowest row
@@ -24,7 +26,7 @@ uint64_t mul8x8gf2 (uint64_t A, uint64_t B) {
     return C;
 }
 
-uint16_t mul4x4gf2 (uint16_t A, uint16_t B) {
+uint16_t mul4x4 (uint16_t A, uint16_t B) {
     static const uint16_t ROW = 0x000F;  // lowest row
     static const uint16_t COL = 0x1111;  // rightmost column
 
@@ -38,7 +40,7 @@ uint16_t mul4x4gf2 (uint16_t A, uint16_t B) {
     return C;
 }
 
-uint64_t transpose8x8gf2(uint64_t A) {
+uint64_t transpose8x8(uint64_t A) {
     uint64_t C = 0;
     for (int i = 0; i < 8; ++i) {
         C |= (A & (0x0101010101010101ull << (i*8))) >> (i*8);
@@ -46,57 +48,57 @@ uint64_t transpose8x8gf2(uint64_t A) {
     return C;
 }
 
-struct T4x4GF2 {
+struct T4x4 {
 
-    static T4x4GF2 mul(T4x4GF2 A, T4x4GF2 B) {
-        return T4x4GF2{mul4x4gf2(A.data, B.data)};
+    static T4x4 mul(T4x4 A, T4x4 B) {
+        return T4x4{mul4x4(A.data, B.data)};
     }
 
-    static T4x4GF2 add(T4x4GF2 A, T4x4GF2 B) {
-        return T4x4GF2{static_cast<uint16_t>(A.data ^ B.data)};
+    static T4x4 add(T4x4 A, T4x4 B) {
+        return T4x4{static_cast<uint16_t>(A.data ^ B.data)};
     }
 
-    static T4x4GF2 zero() {
-        return T4x4GF2{};
+    static T4x4 zero() {
+        return T4x4{};
     }
 
-    static T4x4GF2 all_ones() {
-        return T4x4GF2{0xFFFF};
+    static T4x4 all_ones() {
+        return T4x4{0xFFFF};
     }
 
     uint16_t data{0};
 };
 
-struct T8x8GF2 {
+struct T8x8 {
 
-    static T8x8GF2 mul(T8x8GF2 A, T8x8GF2 B) {
-        return T8x8GF2{mul8x8gf2(A.data, B.data)};
+    static T8x8 mul(T8x8 A, T8x8 B) {
+        return T8x8{mul8x8(A.data, B.data)};
     }
 
-    static T8x8GF2 add(T8x8GF2 A, T8x8GF2 B) {
-        return T8x8GF2{A.data ^ B.data};
+    static T8x8 add(T8x8 A, T8x8 B) {
+        return T8x8{A.data ^ B.data};
     }
 
-    static T8x8GF2 zero() {
-        return T8x8GF2{};
+    static T8x8 zero() {
+        return T8x8{};
     }
 
-    static T8x8GF2 all_ones() {
-        return T8x8GF2{0xFFFFFFFFFFFFFFFFull};
+    static T8x8 all_ones() {
+        return T8x8{0xFFFFFFFFFFFFFFFFull};
     }
 
-    static T8x8GF2 transpose(T8x8GF2 A) {
-        
+    static T8x8 transpose(T8x8 A) {
+
     }
 
-    uint64_t data{0};  
+    uint64_t data{0};
 };
 
 template<class TBlock>
-struct TMatrixGF2 {
+struct TMatrix {
     // TODO: rows -> blockRows, cols -> blockCols, cut out the unused rightmost and bottommost bits with appropriate masks!!!
-    
-    TMatrixGF2& operator*=(const TMatrixGF2& other) {
+
+    TMatrix& operator*=(const TMatrix& other) {
         // inplace multiplication can be only done if `other` is square
         EXPECT(cols == other.rows, Format("Incompatible matrices: lhs.cols = %, rhs.rows = %", cols, other.cols));
         EXPECT(other.IsSquare(), Format("rhs must be square, but the shape is (%, %)", other.rows, other.cols));
@@ -114,8 +116,14 @@ struct TMatrixGF2 {
         return *this;
     }
 
-    friend TMatrixGF2 operator*(const TMatrixGF2& A, const TMatrixGF2& B) {
-        
+    TMatrix& operator^=(const TMatrix& other) {
+    }
+
+    // TODO: add only ^, | and &, no other operations are allowed
+
+    friend TMatrix operator*(const TMatrix& A, const TMatrix& B) {
+        auto result{A};
+        return result *= B;
     }
 
     uint64_t rows;
@@ -123,7 +131,8 @@ struct TMatrixGF2 {
     std::vector<TBlock> blocks;
 };
 
-using TMatrix64bitGF2 = TMatrixGF2<T8x8GF2>;
-using TMatrix16bitGF2 = TMatrixGF2<T4x4GF2>;
+using TMatrix64bit = TMatrix<T8x8>;
+using TMatrix16bit = TMatrix<T4x4>;
+}  // namespace utils::gf2
 
 }

@@ -2,20 +2,19 @@ cmake_minimum_required(VERSION 3.6)
 
 project(cpputils CXX)
 
-add_library(cpputils INTERFACE)
-add_library(cpputils::cpputils ALIAS cpputils)
+set(CMAKE_CXX_STANDARD 17)
 
-# Copied from here: https://github.com/A-Ih/range-v3/blob/master/CMakeLists.txt#L44
-target_include_directories(cpputils INTERFACE $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/>)
+add_library(
+    cpputils
+    src/string.cc
+)
+target_include_directories(cpputils PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
+add_library(cpputils::cpputils ALIAS cpputils)
 
 if (CPPUTILS_ENABLE_TESTING)
     set(USE_GTEST ON)
-    set(USE_FMT OFF)
     set(USE_RANGEV3 ON)
-    set(USE_RE2 OFF)
-    set(USE_JSON OFF)
-    set(USE_SPDLOG OFF)
-    set(USE_ARGPARSE OFF)
     set(USE_ABSL ON)
 
     include(cmake/ahmad1337_deps.cmake)

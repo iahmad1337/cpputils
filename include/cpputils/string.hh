@@ -1,10 +1,12 @@
 #pragma once
 
 #include <string>
+#include <string_view>
 #include <unordered_set>
 #include <vector>
 #include <type_traits>
 #include <sstream>
+#include <algorithm>
 
 namespace utils {
 
