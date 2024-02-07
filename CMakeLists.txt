@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 3.6)
 project(cpputils CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_library(
     cpputils
@@ -21,18 +22,25 @@ if (CPPUTILS_ENABLE_TESTING)
     include(cmake/ahmad1337_utils.cmake)
 
     add_basic_executable(
-        NAME test
+        NAME test_utils
         SRCS test/test_utils.cc
     )
 
+    add_basic_executable(
+        NAME test_itertools
+        SRCS test/test_itertools.cc
+    )
+
     link_to_all(
-        TARGETS test
+        TARGETS
+            test_utils
+            test_itertools
         DEPS
             cpputils::cpputils
             range-v3::range-v3
             absl::strings
             absl::str_format
             absl::log
-            GTest::gtest
+            GTest::gtest_main
     )
 endif()

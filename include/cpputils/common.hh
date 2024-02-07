@@ -22,7 +22,7 @@ std::string Format(std::string_view formatStr, Args&&... args) {
   if constexpr (sizeof...(Args) == 0) {
     return std::string{formatStr};
   }
-  auto replacements = {ToString(std::forward<Args>(args))...};
+  std::initializer_list<std::string> replacements = {ToString(std::forward<Args>(args))...};
   auto currentReplacement = replacements.begin();
   std::ostringstream result;
   bool skip{false};
