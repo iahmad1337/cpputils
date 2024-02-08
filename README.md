@@ -37,6 +37,8 @@ the code here
   difference) (???)
 - Home dir: https://github.com/ospray/rkcommon/blob/master/rkcommon/os/FileName.cpp#L40
 - move definitions to .cc
+- There are not enough `std::forward`s and sometimes I don't even know if I need
+  to use it.
 
 ## utils::math
 - Matrices that are stored in blocks
@@ -55,3 +57,5 @@ the code here
   frequencies, are_distinct, nth, sliding_window,  and other popular algorithms.
   Take inspiration from Java Stream API, python itertools, toolz, topk, etc.
   Probably make this thing heap-allocated
+- Write down thiw tip in my cheatsheets: https://stackoverflow.com/a/599416/17549962
+  (`:%norm A \` and `:%norm I- `)

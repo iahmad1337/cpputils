@@ -22,8 +22,8 @@ if (CPPUTILS_ENABLE_TESTING)
     include(cmake/ahmad1337_utils.cmake)
 
     add_basic_executable(
-        NAME test_utils
-        SRCS test/test_utils.cc
+        NAME test_string_utils
+        SRCS test/test_string_utils.cc
     )
 
     add_basic_executable(
@@ -31,10 +31,16 @@ if (CPPUTILS_ENABLE_TESTING)
         SRCS test/test_itertools.cc
     )
 
+    add_basic_executable(
+        NAME test_meta
+        SRCS test/test_meta.cc
+    )
+
     link_to_all(
         TARGETS
-            test_utils
+            test_string_utils
             test_itertools
+            test_meta
         DEPS
             cpputils::cpputils
             range-v3::range-v3
