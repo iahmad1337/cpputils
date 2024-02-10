@@ -57,7 +57,7 @@ auto TupleReduceImpl(TupleLike&& t, TInit&& init, ReduceFn&& fn, std::index_sequ
 }
 
 template<class TupleLikeLhs, class TupleLikeRhs, class BinOp, size_t... Is>
-auto ApplyBinOp(TupleLikeLhs lhs, TupleLikeRhs rhs, BinOp&& op, std::index_sequence<Is...>) {
+auto ApplyBinOpImpl(TupleLikeLhs lhs, TupleLikeRhs rhs, BinOp&& op, std::index_sequence<Is...>) {
   return std::make_tuple(std::invoke(std::forward<BinOp>(op), std::get<Is>(lhs), std::get<Is>(rhs))...);
 }
 
@@ -77,7 +77,7 @@ auto ApplyBinOp(TupleLikeLhs&& lhs, TupleLikeRhs&& rhs, BinOp&& op) {
   constexpr auto TUPLE_SIZE_LHS = std::tuple_size_v<std::decay_t<TupleLikeLhs>>;
   constexpr auto TUPLE_SIZE_RHS = std::tuple_size_v<std::decay_t<TupleLikeRhs>>;
   static_assert(TUPLE_SIZE_LHS == TUPLE_SIZE_RHS, "Tuples should match");
-  return detail::ApplyBinOp(
+  return detail::ApplyBinOpImpl(
       std::forward<TupleLikeLhs>(lhs),
       std::forward<TupleLikeRhs>(rhs),
       std::forward<BinOp>(op),

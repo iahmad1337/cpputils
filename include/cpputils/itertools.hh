@@ -1,3 +1,5 @@
+// Inspired by https://github.com/biowpn/itertools
+
 #pragma once
 
 #include <cpputils/meta.hh>
@@ -13,10 +15,10 @@ namespace utils {
 
 template<typename TRange>
 struct TRangeTraits {
-  using iterator = decltype(std::begin(std::declval<TRange>()));
+  using iterator = std::decay_t<decltype(std::begin(std::declval<TRange>()))>;
   using value_type = std::decay_t<decltype(*std::declval<iterator>())>;
 
-  using TEnd = decltype(std::end(std::declval<TRange>()));
+  using TEnd = std::decay_t<decltype(std::end(std::declval<TRange>()))>;
 };
 
 struct TSentinel {};
@@ -27,16 +29,16 @@ struct TRangeView {
   using iterator = std::decay_t<TBegin>;
   using value_type = std::decay_t<decltype(*std::declval<iterator>())>;
 
-  TRangeView(iterator b, TEnd e) : b{b}, e{e} {}
+  constexpr TRangeView(iterator b, TEnd e) : b{b}, e{e} {}
 
   template<typename TContainer>
-  TRangeView(const TContainer& c) : b{std::begin(c)}, e{std::end(c)} {}
+  constexpr TRangeView(const TContainer& c) : b{std::begin(c)}, e{std::end(c)} {}
 
-  iterator begin() const {
+  constexpr iterator begin() const {
     return b;
   }
 
-  TEnd end() const {
+  constexpr TEnd end() const {
     return e;
   }
 
@@ -50,6 +52,9 @@ TRangeView(TContainer) -> TRangeView<
   std::decay_t<typename TRangeTraits<TContainer>::iterator>,
   std::decay_t<typename TRangeTraits<TContainer>::TEnd>
 >;
+
+template<class TBegin, class TEnd>
+TRangeView(TRangeView<TBegin, TEnd>) -> TRangeView<TBegin, TEnd>;
 
 /*******************************************************************************
 *                                Mapped range                                 *

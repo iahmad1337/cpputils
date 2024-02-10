@@ -5,6 +5,7 @@
 
 #include <charconv>
 #include <functional>
+#include <type_traits>
 
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
@@ -15,6 +16,16 @@
   } catch (const std::exception& e) { \
     EXPECT_THAT(e.what(), matcher); \
   }
+
+namespace itertools_static_test {
+
+using TIntRange = utils::TRangeView<int*, int*>;
+using utils::TRangeView;
+
+static_assert(std::is_same_v<TIntRange, decltype(TRangeView{std::declval<TIntRange>()})>);
+static_assert(std::is_same_v<TIntRange, decltype(TRangeView{TRangeView{std::declval<TIntRange>()}})>);
+static_assert(std::is_same_v<decltype(TRangeView{std::vector<int>{}}), decltype(TRangeView{utils::TRangeView{std::vector<int>{}}})>);
+}
 
 TEST(RangeViewTest, VectorView) {
   std::vector<int> v{1, 2, 3, 4, 5};

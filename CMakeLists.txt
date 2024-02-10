@@ -15,8 +15,6 @@ add_library(cpputils::cpputils ALIAS cpputils)
 
 if (CPPUTILS_ENABLE_TESTING)
     set(USE_GTEST ON)
-    set(USE_RANGEV3 ON)
-    set(USE_ABSL ON)
 
     include(cmake/ahmad1337_deps.cmake)
     include(cmake/ahmad1337_utils.cmake)
@@ -43,10 +41,6 @@ if (CPPUTILS_ENABLE_TESTING)
             test_meta
         DEPS
             cpputils::cpputils
-            range-v3::range-v3
-            absl::strings
-            absl::str_format
-            absl::log
             GTest::gtest_main
     )
 endif()
