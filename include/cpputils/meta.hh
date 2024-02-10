@@ -4,6 +4,7 @@
 #include <tuple>
 #include <array>
 #include <functional>
+#include <type_traits>
 
 namespace utils::meta {
 template<typename ...Ts>
@@ -13,6 +14,9 @@ struct Overload : Ts... {
 
 template<typename ...Ts>
 Overload(Ts...) -> Overload<Ts...>;
+
+template<class... Ts>
+struct TFalse : std::false_type {};
 
 template<typename T>
 constexpr inline const char* TypeStr = "unknown type";

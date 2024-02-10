@@ -17,30 +17,20 @@
     EXPECT_THAT(e.what(), matcher); \
   }
 
-namespace itertools_static_test {
-
-using TIntRange = utils::TRangeView<int*, int*>;
-using utils::TRangeView;
-
-static_assert(std::is_same_v<TIntRange, decltype(TRangeView{std::declval<TIntRange>()})>);
-static_assert(std::is_same_v<TIntRange, decltype(TRangeView{TRangeView{std::declval<TIntRange>()}})>);
-static_assert(std::is_same_v<decltype(TRangeView{std::vector<int>{}}), decltype(TRangeView{utils::TRangeView{std::vector<int>{}}})>);
-}
-
 TEST(RangeViewTest, VectorView) {
   std::vector<int> v{1, 2, 3, 4, 5};
-  auto range = utils::TRangeView{v};
-  EXPECT_THAT(ToVector(range), testing::ElementsAre(1, 2, 3, 4, 5));
+  auto range = utils::MakeView(v);
+  EXPECT_THAT(utils::ToVector(range), testing::ElementsAre(1, 2, 3, 4, 5));
 
   v = {};
-  range = utils::TRangeView{v};
-  EXPECT_THAT(ToVector(range), testing::IsEmpty());
+  range = utils::MakeView(v);
+  EXPECT_THAT(utils::ToVector(range), testing::IsEmpty());
 }
 
 TEST(RangeViewTest, InitializerListView) {
   auto il = std::initializer_list<int>{1, 2, 3};
-  auto range = utils::TRangeView{il};
-  EXPECT_THAT(ToVector(range), testing::ElementsAre(1, 2, 3));
+  auto range = utils::MakeView(il);
+  EXPECT_THAT(utils::ToVector(range), testing::ElementsAre(1, 2, 3));
 }
 
 TEST(MappedRangeTest, MappedRange) {

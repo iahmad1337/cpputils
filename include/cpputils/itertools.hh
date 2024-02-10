@@ -13,26 +13,32 @@
 
 namespace utils {
 
+namespace detail {
+
+/// Marker for lightweight, non-owning ranges, that must only be stored as values
+struct TViewTag {};
+
 template<typename TRange>
 struct TRangeTraits {
   using iterator = std::decay_t<decltype(std::begin(std::declval<TRange>()))>;
   using value_type = std::decay_t<decltype(*std::declval<iterator>())>;
 
   using TEnd = std::decay_t<decltype(std::end(std::declval<TRange>()))>;
+
+  static constexpr bool is_view = std::is_base_of_v<TViewTag, std::decay_t<TRange>>;
 };
 
+
+/// Helper type for sentinel `.end()` iterator
 struct TSentinel {};
-const TSentinel Sentinel;
+inline constexpr TSentinel Sentinel;
 
 template<class TBegin, class TEnd>
-struct TRangeView {
+struct TRangeView : TViewTag {
   using iterator = std::decay_t<TBegin>;
   using value_type = std::decay_t<decltype(*std::declval<iterator>())>;
 
   constexpr TRangeView(iterator b, TEnd e) : b{b}, e{e} {}
-
-  template<typename TContainer>
-  constexpr TRangeView(const TContainer& c) : b{std::begin(c)}, e{std::end(c)} {}
 
   constexpr iterator begin() const {
     return b;
@@ -47,26 +53,22 @@ private:
   TEnd e;
 };
 
-template<class TContainer>
-TRangeView(TContainer) -> TRangeView<
-  std::decay_t<typename TRangeTraits<TContainer>::iterator>,
-  std::decay_t<typename TRangeTraits<TContainer>::TEnd>
->;
-
 template<class TBegin, class TEnd>
-TRangeView(TRangeView<TBegin, TEnd>) -> TRangeView<TBegin, TEnd>;
+TRangeView(TBegin, TEnd) -> TRangeView<std::decay_t<TBegin>, std::decay_t<TEnd>>;
 
 /*******************************************************************************
 *                                Mapped range                                 *
 *******************************************************************************/
 
-template<class TNestedRange, class Fn>
-struct TMappedRange {
+template<class TNestedView, class Fn>
+struct TMappedView : TViewTag {
   struct TIterator;
   friend TIterator;
 
-  using TNestedIterator = typename TRangeTraits<TNestedRange>::iterator;
-  using TValue =
+  using TNestedIterator = typename TRangeTraits<TNestedView>::iterator;
+
+  using iterator = TIterator;
+  using value_type =
     std::decay_t<
       std::invoke_result_t<
         Fn,
@@ -74,15 +76,12 @@ struct TMappedRange {
       >
     >;
 
-  using iterator = TIterator;
-  using value_type = TValue;
-
-  TMappedRange(TNestedRange r, Fn mapper) : NestedRange{r}, Mapper{mapper} {}
+  TMappedView(TNestedView r, Fn mapper) : NestedView{r}, Mapper{mapper} {}
 
   struct TIterator {
     using iterator_category = std::input_iterator_tag;
 
-    TIterator(const TMappedRange* r, TNestedIterator begin)
+    TIterator(const TMappedView* r, TNestedIterator begin)
       : UnderlyingRange{r}, NestedIterator{begin} {}
 
     TIterator operator++() {
@@ -113,13 +112,13 @@ struct TMappedRange {
       return !(lhs == rhs);
     }
   private:
-    bool IsEnd() const { return NestedIterator == std::end(UnderlyingRange->NestedRange); }
-    const TMappedRange* UnderlyingRange;
+    bool IsEnd() const { return NestedIterator == std::end(UnderlyingRange->NestedView); }
+    const TMappedView* UnderlyingRange;
     TNestedIterator NestedIterator;
   };
 
   TIterator begin() const {
-    return TIterator(this, NestedRange.begin());
+    return TIterator(this, NestedView.begin());
   }
 
   TSentinel end() const {
@@ -127,31 +126,26 @@ struct TMappedRange {
   }
 
 
-// private:  // TODO: the friend mechanics is broken here for some reason (gcc 11.4)
-  TNestedRange NestedRange;
+private:
+  TNestedView NestedView;
   Fn Mapper;
 };
 
-template<class TRange, class Fn>
-TMappedRange(TRange, Fn) -> TMappedRange<std::decay_t<TRange>, std::decay_t<Fn>>;
-
-template<class TRange, class Fn>
-auto Map(const TRange& r, Fn mapper) {
-  return TMappedRange(TRangeView{r}, mapper);
-}
+template<class TView, class Fn>
+TMappedView(TView, Fn) -> TMappedView<std::decay_t<TView>, std::decay_t<Fn>>;
 
 /*******************************************************************************
 *                                Zipped range                                 *
 *******************************************************************************/
 
-template<class... TRanges>
-struct TZippedRange {
+template<class... TViews>
+struct TZippedView : TViewTag {
   struct TIterator {
-    friend TZippedRange;
-    using value_type = std::tuple<typename TRangeTraits<TRanges>::value_type...>;
+    friend TZippedView;
+    using value_type = std::tuple<typename TRangeTraits<TViews>::value_type...>;
 
-    using TIteratorTuple = std::tuple<typename TRangeTraits<TRanges>::iterator...>;
-    using TEndTuple = std::tuple<typename TRangeTraits<TRanges>::TEnd...>;
+    using TIteratorTuple = std::tuple<typename TRangeTraits<TViews>::iterator...>;
+    using TEndTuple = std::tuple<typename TRangeTraits<TViews>::TEnd...>;
 
     TIterator operator++() {
       IteratorTuple = utils::meta::TransformTuple(IteratorTuple, [](auto x) { return ++x; });
@@ -183,27 +177,27 @@ struct TZippedRange {
 
   private:
     template<class... TBegins>
-    TIterator(const TZippedRange* r, TBegins... begins) : IteratorTuple{begins...}, UnderlyingRange{r} {}
+    TIterator(const TZippedView* r, TBegins... begins) : IteratorTuple{begins...}, UnderlyingView{r} {}
 
     bool IsEnd() const {
       return utils::meta::ReduceTuple(
-        utils::meta::ApplyBinOp(IteratorTuple, UnderlyingRange->storage, [] (auto x, auto y) { return x == std::end(y); }),
+        utils::meta::ApplyBinOp(IteratorTuple, UnderlyingView->storage, [] (auto x, auto y) { return x == std::end(y); }),
         false,
         std::bit_or{}
       );
     }
 
     TIteratorTuple IteratorTuple;
-    const TZippedRange<TRanges...>* UnderlyingRange;
+    const TZippedView* UnderlyingView;
   };
 
   using iterator = TIterator;
   using value_type = typename iterator::value_type;
 
-  TZippedRange(TRanges... rs) : storage{std::move(rs)...} {}
+  TZippedView(TViews... rs) : storage{std::move(rs)...} {}
 
   TIterator begin() const {
-    return BeginImpl<>(std::index_sequence_for<TRanges...>{});
+    return BeginImpl<>(std::index_sequence_for<TViews...>{});
   }
 
   TSentinel end() const {
@@ -215,24 +209,44 @@ private:
   TIterator BeginImpl(std::index_sequence<Is...>) const {
     return TIterator{this, std::begin(std::get<Is>(storage))...};
   }
-  std::tuple<TRanges...> storage;
+  std::tuple<TViews...> storage;
 };
 
-template<class... TRanges>
-TZippedRange(TRanges...) -> TZippedRange<std::decay_t<TRanges>...>;
+template<class... TViews>
+TZippedView(TViews...) -> TZippedView<std::decay_t<TViews>...>;
+
+}  // namespace utils::detail
+
+/*******************************************************************************
+*                             Itertools interface                             *
+*******************************************************************************/
+
+template<class TRange>
+auto MakeView(const TRange& c) {
+  if constexpr (detail::TRangeTraits<TRange>::is_view) {
+    return c;
+  } else {
+    return detail::TRangeView{std::begin(c), std::end(c)};
+  }
+}
+
+template<class TRange, class Fn>
+auto Map(const TRange& r, Fn mapper) {
+  return detail::TMappedView{MakeView(r), mapper};
+}
 
 template<class... TRanges>
 auto Zip(const TRanges&... ranges) {
-  return TZippedRange(TRangeView{ranges}...);
+  return detail::TZippedView(MakeView(ranges)...);
 }
 
 /*******************************************************************************
 *                                 ToContainer                                 *
 *******************************************************************************/
 
-template<class TContainer>
-auto ToVector(const TContainer& c) {
-  std::vector<typename TRangeTraits<TContainer>::value_type> result;
+template<class TRange>
+auto ToVector(const TRange& c) {
+  std::vector<typename detail::TRangeTraits<TRange>::value_type> result;
   for (auto v : c) {
     result.emplace_back(std::move(v));
   }
