@@ -10,6 +10,7 @@ WORK_DIR = Path('.')
 INCLUDE_ORDER = [
     'cpputils/common.hh',
     'cpputils/meta.hh',
+    'cpputils/itertools.hh',
     'cpputils/string.hh',
     'cpputils/debug.hh',
     'cpputils/linalg.hh',

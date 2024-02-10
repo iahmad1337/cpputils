@@ -38,9 +38,9 @@ TEST(MappedRangeTest, MappedRange) {
   const auto square = [](auto x) { return x * x; };
   const auto cube = [square] (const auto& x) { return x * square(x); };
   const auto quad = [square] (auto& x) { return square(x) * square(x); };
-  EXPECT_THAT(utils::ToVector(utils::Map(v, square)), testing::ElementsAre(1, 4, 9));
-  EXPECT_THAT(utils::ToVector(utils::Map(v, cube)), testing::ElementsAre(1, 8, 27));
-  EXPECT_THAT(utils::ToVector(utils::Map(v, quad)), testing::ElementsAre(1, 16, 81));
+  EXPECT_THAT(utils::Map(v, square), testing::ElementsAre(1, 4, 9));
+  EXPECT_THAT(utils::Map(v, cube), testing::ElementsAre(1, 8, 27));
+  EXPECT_THAT(utils::Map(v, quad), testing::ElementsAre(1, 16, 81));
   EXPECT_EQ(utils::ToVector(utils::Map(utils::Map(v, square), square)), utils::ToVector(utils::Map(v, quad)));
 }
 
@@ -48,7 +48,7 @@ TEST(ZippedRangeTest, TripleVector) {
   const auto v1 = std::vector{1, 2, 3};
   const auto v2 = std::vector{4, 5, 6};
   const auto v3 = std::vector{'a', 'b', 'c'};
-  const auto zipped = utils::ToVector(utils::Zip(v1, v2, v3));
+  const auto zipped = utils::Zip(v1, v2, v3);
   EXPECT_THAT(zipped, testing::ElementsAre(
     testing::FieldsAre(1, 4, 'a'),
     testing::FieldsAre(2, 5, 'b'),
@@ -77,7 +77,7 @@ TEST(ZipMapTest, ZippedMap) {
     v1,
     utils::Map(v3, [](char x) -> int { return x - 'a'; })
   );
-  EXPECT_THAT(utils::ToVector(result), testing::ElementsAre(
+  EXPECT_THAT(result, testing::ElementsAre(
     testing::FieldsAre(1, 0),
     testing::FieldsAre(2, 1),
     testing::FieldsAre(3, 2)
@@ -94,5 +94,5 @@ TEST(ZipMapTest, NestedMap) {
     ),
     [] (const auto& x) { return utils::meta::ReduceTuple(x, 0, std::plus{}); }
   );
-  EXPECT_THAT(utils::ToVector(result), testing::ElementsAre(1, 3, 5));
+  EXPECT_THAT(result, testing::ElementsAre(1, 3, 5));
 }
