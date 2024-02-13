@@ -9,7 +9,6 @@
 #include <iterator>
 #include <vector>
 #include <utility>
-#include <optional>
 
 namespace utils {
 
