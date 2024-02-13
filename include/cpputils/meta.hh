@@ -45,12 +45,12 @@ DECL_TYPESTR(long double)
 
 namespace detail {
 template<class TTupleLike, class Fn, size_t... Is>
-auto TransformTupleImpl(TTupleLike&& t, Fn&& fn, std::index_sequence<Is...>) {
+constexpr auto TransformTupleImpl(TTupleLike&& t, Fn&& fn, std::index_sequence<Is...>) {
   return std::make_tuple(std::invoke(std::forward<Fn>(fn), std::get<Is>(std::forward<TTupleLike>(t)))...);
 }
 
 template<class TupleLike, class TInit, class ReduceFn, size_t... Is>
-auto TupleReduceImpl(TupleLike&& t, TInit&& init, ReduceFn&& fn, std::index_sequence<Is...>) {
+constexpr auto TupleReduceImpl(TupleLike&& t, TInit&& init, ReduceFn&& fn, std::index_sequence<Is...>) {
   using TCommon = std::common_type_t<std::tuple_element_t<Is, std::decay_t<TupleLike>>...>;
   std::array<TCommon, sizeof...(Is)> casted = {static_cast<TCommon>(std::get<Is>(std::forward<TupleLike>(t)))...};
   auto result{std::forward<TInit>(init)};
@@ -61,14 +61,14 @@ auto TupleReduceImpl(TupleLike&& t, TInit&& init, ReduceFn&& fn, std::index_sequ
 }
 
 template<class TupleLikeLhs, class TupleLikeRhs, class BinOp, size_t... Is>
-auto ApplyBinOpImpl(TupleLikeLhs lhs, TupleLikeRhs rhs, BinOp&& op, std::index_sequence<Is...>) {
+constexpr auto ApplyBinOpImpl(TupleLikeLhs lhs, TupleLikeRhs rhs, BinOp&& op, std::index_sequence<Is...>) {
   return std::make_tuple(std::invoke(std::forward<BinOp>(op), std::get<Is>(lhs), std::get<Is>(rhs))...);
 }
 
 }  // namespace utils::detail
 
 template<class TTupleLike, class Fn>
-auto TransformTuple(TTupleLike&& t, Fn&& fn) {
+constexpr auto TransformTuple(TTupleLike&& t, Fn&& fn) {
   return detail::TransformTupleImpl(
     t,
     fn,
@@ -77,7 +77,7 @@ auto TransformTuple(TTupleLike&& t, Fn&& fn) {
 }
 
 template<class TupleLikeLhs, class TupleLikeRhs, class BinOp>
-auto ApplyBinOp(TupleLikeLhs&& lhs, TupleLikeRhs&& rhs, BinOp&& op) {
+constexpr auto ApplyBinOp(TupleLikeLhs&& lhs, TupleLikeRhs&& rhs, BinOp&& op) {
   constexpr auto TUPLE_SIZE_LHS = std::tuple_size_v<std::decay_t<TupleLikeLhs>>;
   constexpr auto TUPLE_SIZE_RHS = std::tuple_size_v<std::decay_t<TupleLikeRhs>>;
   static_assert(TUPLE_SIZE_LHS == TUPLE_SIZE_RHS, "Tuples should match");
@@ -90,7 +90,7 @@ auto ApplyBinOp(TupleLikeLhs&& lhs, TupleLikeRhs&& rhs, BinOp&& op) {
 }
 
 template<class TupleLike, class Init, class ReduceFn>
-auto ReduceTuple(TupleLike&& t, Init init, ReduceFn&& fn) {
+constexpr auto ReduceTuple(TupleLike&& t, Init init, ReduceFn&& fn) {
   constexpr auto TUPLE_SIZE = std::tuple_size_v<std::decay_t<TupleLike>>;
   static_assert(TUPLE_SIZE > 0, "Can't reduce empty tuple!");
   if constexpr (TUPLE_SIZE == 1) {

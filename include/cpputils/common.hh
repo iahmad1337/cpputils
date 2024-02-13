@@ -6,64 +6,6 @@
 
 namespace utils {
 
-template <typename T>
-std::string ToString(const T& x) {
-  std::ostringstream os;
-  os << x;
-  return os.str();
-}
-
-template <typename... Args>
-std::string Format(std::string_view formatStr, Args&&... args) {
-  constexpr static auto REPORT_MISMATCH = [] () {
-    throw std::runtime_error(
-        "Number of arguments doesn't match number of replacement spots");
-  };
-  if constexpr (sizeof...(Args) == 0) {
-    return std::string{formatStr};
-  }
-  std::initializer_list<std::string> replacements = {ToString(std::forward<Args>(args))...};
-  auto currentReplacement = replacements.begin();
-  std::ostringstream result;
-  bool skip{false};
-  for (auto c : formatStr) {
-    if (skip) {
-      skip = false;
-      result << c;
-      continue;
-    }
-    if (c == '%') {
-      if (currentReplacement == replacements.end()) {
-        REPORT_MISMATCH();
-      }
-      result << *currentReplacement;
-      currentReplacement++;
-    } else if (c == '\\') {
-      skip = true;
-    } else {
-      result << c;
-    }
-  }
-  if (currentReplacement != replacements.end()) {
-    REPORT_MISMATCH();
-  }
-  return result.str();
-}
-
-class MakeString {
-public:
-  template<class T>
-  MakeString& operator<< (const T& arg) {
-    ss << arg;
-    return *this;
-  }
-  operator std::string() const {
-    return ss.str();
-  }
-private:
-  std::stringstream ss;
-};
-
 template <typename T, typename U>
 bool OneOf(T val, std::initializer_list<U> list) {
   return std::find(list.begin(), list.end(), val) != list.end();
@@ -75,3 +17,11 @@ bool OneOf(T val, const Container& c) {
 }
 
 } // namespace utils
+
+using u32 = std::uint32_t;
+using u64 = std::uint64_t;
+
+using i32 = std::int32_t;
+using i64 = std::int64_t;
+
+

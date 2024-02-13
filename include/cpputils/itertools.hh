@@ -76,52 +76,52 @@ struct TMappedView : TViewTag {
       >
     >;
 
-  TMappedView(TNestedView r, Fn mapper) : NestedView{r}, Mapper{mapper} {}
+  constexpr TMappedView(TNestedView r, Fn mapper) : NestedView{r}, Mapper{mapper} {}
 
   struct TIterator {
     using iterator_category = std::input_iterator_tag;
 
-    TIterator(const TMappedView* r, TNestedIterator begin)
+    constexpr TIterator(const TMappedView* r, TNestedIterator begin)
       : UnderlyingRange{r}, NestedIterator{begin} {}
 
-    TIterator operator++() {
+    constexpr TIterator operator++() {
       ++NestedIterator;
       return *this;
     }
 
-    value_type operator*() {
+    constexpr value_type operator*() {
         return UnderlyingRange->Mapper(*NestedIterator);
     }
 
-    friend bool operator==(const TIterator &lhs, const TIterator &rhs) {
+    friend constexpr bool operator==(const TIterator &lhs, const TIterator &rhs) {
       return lhs.UnderlyingRange == rhs.UnderlyingRange && lhs.NestedIterator == rhs.NestedIterator;
     }
-    friend bool operator==(const TIterator &lhs, const TSentinel&) {
+    friend constexpr bool operator==(const TIterator &lhs, const TSentinel&) {
       return lhs.IsEnd();
     }
-    friend bool operator==(const TSentinel&, const TIterator &rhs) {
+    friend constexpr bool operator==(const TSentinel&, const TIterator &rhs) {
       return rhs.IsEnd();
     }
-    friend bool operator!=(const TIterator &lhs, const TIterator &rhs) {
+    friend constexpr bool operator!=(const TIterator &lhs, const TIterator &rhs) {
       return !(lhs == rhs);
     }
-    friend bool operator!=(const TIterator &lhs, const TSentinel &rhs) {
+    friend constexpr bool operator!=(const TIterator &lhs, const TSentinel &rhs) {
       return !(lhs == rhs);
     }
-    friend bool operator!=(const TSentinel &lhs, const TIterator &rhs) {
+    friend constexpr bool operator!=(const TSentinel &lhs, const TIterator &rhs) {
       return !(lhs == rhs);
     }
   private:
-    bool IsEnd() const { return NestedIterator == std::end(UnderlyingRange->NestedView); }
+    constexpr bool IsEnd() const { return NestedIterator == std::end(UnderlyingRange->NestedView); }
     const TMappedView* UnderlyingRange;
     TNestedIterator NestedIterator;
   };
 
-  TIterator begin() const {
+  constexpr TIterator begin() const {
     return TIterator(this, NestedView.begin());
   }
 
-  TSentinel end() const {
+  constexpr TSentinel end() const {
     return Sentinel;
   }
 
@@ -147,39 +147,39 @@ struct TZippedView : TViewTag {
     using TIteratorTuple = std::tuple<typename TRangeTraits<TViews>::iterator...>;
     using TEndTuple = std::tuple<typename TRangeTraits<TViews>::TEnd...>;
 
-    TIterator operator++() {
+    constexpr TIterator operator++() {
       IteratorTuple = utils::meta::TransformTuple(IteratorTuple, [](auto x) { return ++x; });
       return *this;
     }
 
-    value_type operator*() {
+    constexpr value_type operator*() {
       return utils::meta::TransformTuple(IteratorTuple, [](auto x) { return *x; });
     }
 
-    friend bool operator==(const TIterator &lhs, const TIterator &rhs) {
+    friend constexpr bool operator==(const TIterator &lhs, const TIterator &rhs) {
       return lhs.IsEnd() or rhs.IsEnd();
     }
-    friend bool operator==(const TIterator &lhs, const TSentinel&) {
+    friend constexpr bool operator==(const TIterator &lhs, const TSentinel&) {
       return lhs.IsEnd();
     }
-    friend bool operator==(const TSentinel&, const TIterator &rhs) {
+    friend constexpr bool operator==(const TSentinel&, const TIterator &rhs) {
       return rhs.IsEnd();
     }
-    friend bool operator!=(const TIterator &lhs, const TIterator &rhs) {
+    friend constexpr bool operator!=(const TIterator &lhs, const TIterator &rhs) {
       return !(lhs == rhs);
     }
-    friend bool operator!=(const TIterator &lhs, const TSentinel &rhs) {
+    friend constexpr bool operator!=(const TIterator &lhs, const TSentinel &rhs) {
       return !(lhs == rhs);
     }
-    friend bool operator!=(const TSentinel &lhs, const TIterator &rhs) {
+    friend constexpr bool operator!=(const TSentinel &lhs, const TIterator &rhs) {
       return !(lhs == rhs);
     }
 
   private:
     template<class... TBegins>
-    TIterator(const TZippedView* r, TBegins... begins) : IteratorTuple{begins...}, UnderlyingView{r} {}
+    constexpr TIterator(const TZippedView* r, TBegins... begins) : IteratorTuple{begins...}, UnderlyingView{r} {}
 
-    bool IsEnd() const {
+    constexpr bool IsEnd() const {
       return utils::meta::ReduceTuple(
         utils::meta::ApplyBinOp(IteratorTuple, UnderlyingView->storage, [] (auto x, auto y) { return x == std::end(y); }),
         false,
@@ -194,19 +194,19 @@ struct TZippedView : TViewTag {
   using iterator = TIterator;
   using value_type = typename iterator::value_type;
 
-  TZippedView(TViews... rs) : storage{std::move(rs)...} {}
+  constexpr TZippedView(TViews... rs) : storage{std::move(rs)...} {}
 
-  TIterator begin() const {
+  constexpr TIterator begin() const {
     return BeginImpl<>(std::index_sequence_for<TViews...>{});
   }
 
-  TSentinel end() const {
+  constexpr TSentinel end() const {
     return Sentinel;
   }
 
 private:
   template<size_t... Is>
-  TIterator BeginImpl(std::index_sequence<Is...>) const {
+  constexpr TIterator BeginImpl(std::index_sequence<Is...>) const {
     return TIterator{this, std::begin(std::get<Is>(storage))...};
   }
   std::tuple<TViews...> storage;
@@ -214,6 +214,86 @@ private:
 
 template<class... TViews>
 TZippedView(TViews...) -> TZippedView<std::decay_t<TViews>...>;
+
+template<class TNestedView, class Fn>
+struct TFilteredView : TViewTag {
+  struct TIterator;
+  friend TIterator;
+
+  using TNestedIterator = typename TRangeTraits<TNestedView>::iterator;
+
+  using iterator = TIterator;
+  using value_type = typename TRangeTraits<TNestedView>::value_type;
+
+  TFilteredView(TNestedView r, Fn filter) : NestedView{r}, Filter{filter} {}
+
+  struct TIterator {
+    using iterator_category = std::input_iterator_tag;
+
+    constexpr TIterator(const TFilteredView* r, TNestedIterator begin)
+      : UnderlyingRange{r}, NestedIterator{begin} {
+      if (!IsEnd()) {
+        SeekNext();
+      }
+    }
+
+    constexpr TIterator operator++() {
+      ++NestedIterator;
+      SeekNext();
+      return *this;
+    }
+
+    constexpr value_type operator*() {
+        return *NestedIterator;
+    }
+
+    friend constexpr bool operator==(const TIterator &lhs, const TIterator &rhs) {
+      return lhs.NestedIterator == rhs.NestedIterator;
+    }
+    friend constexpr bool operator==(const TIterator &lhs, const TSentinel&) {
+      return lhs.IsEnd();
+    }
+    friend constexpr bool operator==(const TSentinel&, const TIterator &rhs) {
+      return rhs.IsEnd();
+    }
+    friend constexpr bool operator!=(const TIterator &lhs, const TIterator &rhs) {
+      return !(lhs == rhs);
+    }
+    friend constexpr bool operator!=(const TIterator &lhs, const TSentinel &rhs) {
+      return !(lhs == rhs);
+    }
+    friend constexpr bool operator!=(const TSentinel &lhs, const TIterator &rhs) {
+      return !(lhs == rhs);
+    }
+  private:
+    constexpr bool IsEnd() const { return NestedIterator == std::end(UnderlyingRange->NestedView); }
+
+    constexpr void SeekNext() {
+      while (!IsEnd() && !UnderlyingRange->Filter(*NestedIterator)) {
+        ++NestedIterator;
+      }
+    }
+
+    const TFilteredView* UnderlyingRange;
+    TNestedIterator NestedIterator;
+  };
+
+  constexpr TIterator begin() const {
+    return TIterator(this, NestedView.begin());
+  }
+
+  constexpr TSentinel end() const {
+    return Sentinel;
+  }
+
+
+private:
+  TNestedView NestedView;
+  Fn Filter;
+};
+
+template<class TView, class Fn>
+TFilteredView(TView, Fn) -> TFilteredView<std::decay_t<TView>, std::decay_t<Fn>>;
 
 }  // namespace utils::detail
 
@@ -238,6 +318,11 @@ auto Map(const TRange& r, Fn mapper) {
 template<class... TRanges>
 auto Zip(const TRanges&... ranges) {
   return detail::TZippedView(MakeView(ranges)...);
+}
+
+template<class TRange, class Fn>
+auto Filter(const TRange& r, Fn filter) {
+  return detail::TFilteredView{MakeView(r), filter};
 }
 
 /*******************************************************************************

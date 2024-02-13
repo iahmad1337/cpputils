@@ -17,6 +17,8 @@
     EXPECT_THAT(e.what(), matcher); \
   }
 
+std::vector<int> empty;
+
 TEST(RangeViewTest, VectorView) {
   std::vector<int> v{1, 2, 3, 4, 5};
   auto range = utils::MakeView(v);
@@ -42,6 +44,8 @@ TEST(MappedRangeTest, MappedRange) {
   EXPECT_THAT(utils::Map(v, cube), testing::ElementsAre(1, 8, 27));
   EXPECT_THAT(utils::Map(v, quad), testing::ElementsAre(1, 16, 81));
   EXPECT_EQ(utils::ToVector(utils::Map(utils::Map(v, square), square)), utils::ToVector(utils::Map(v, quad)));
+
+  EXPECT_THAT(utils::Map(empty, square), testing::ElementsAre());
 }
 
 TEST(ZippedRangeTest, TripleVector) {
@@ -95,4 +99,23 @@ TEST(ZipMapTest, NestedMap) {
     [] (const auto& x) { return utils::meta::ReduceTuple(x, 0, std::plus{}); }
   );
   EXPECT_THAT(result, testing::ElementsAre(1, 3, 5));
+}
+
+
+TEST(FilterTest, SimpleFilter) {
+  const auto v = std::vector{-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5};
+  const auto odd = [](auto x) { return x % 2 != 0; };
+  const auto even = [](auto x) { return x % 2 == 0; };
+  const auto positive = [] (const auto& x) { return x > 0; };
+  const auto zero = [] (const auto& x) { return x == 0; };
+  const auto negative = [] (const auto& x) { return x < 0; };
+  const auto always_false = [] (const auto&) { return false; };
+  EXPECT_THAT(utils::Filter(v, odd), testing::ElementsAre(-5, -3, -1, 1, 3, 5));
+  EXPECT_THAT(utils::Filter(v, even), testing::ElementsAre(-4, -2, 0, 2, 4));
+  EXPECT_THAT(utils::Filter(v, positive), testing::ElementsAre(1, 2, 3, 4, 5));
+  EXPECT_THAT(utils::Filter(v, zero), testing::ElementsAre(0));
+  EXPECT_THAT(utils::Filter(v, negative), testing::ElementsAre(-5, -4, -3, -2, -1));
+  EXPECT_THAT(utils::Filter(v, always_false), testing::ElementsAre());
+
+  EXPECT_THAT(utils::Filter(empty, always_false), testing::ElementsAre());
 }

@@ -1,9 +1,7 @@
 # What is this
 This is a collection of utilities that I sometimes use in my
-projects. Often I just want to get the shit done and I don't care about the
-performance, so the code here may not be optimal (but serves its purpose
-well enough). I might consider speeding up some of the code in the future,
-but for now this is sufficient.
+projects.
+
 # Plans
 - use less features of modern standards when they are not available (via
 ifdefs)
@@ -39,6 +37,7 @@ the code here
 - move definitions to .cc
 - There are not enough `std::forward`s and sometimes I don't even know if I need
   to use it.
+- `platform.hh` - platform-dependent functionality
 
 ## utils::math
 - Matrices that are stored in blocks
@@ -47,15 +46,14 @@ the code here
 ## Short-term plan
 - Reflection for up to 10 fields: ToString specialization, structured
   bindings, hash, order. And...
-- determine, whether it's possible to make a macro like `NAMED_TUPLE(f1, f2, ...)`.
 - ToString specialization for vectors, hashmaps and other stl containers.
   Probably make it more generic?
-- Self-made range-adapters that mutate or don't mutate the stored range and can
-  have chained method calls! This way we won't have to worry about any
-  lifetimes.
-  Reference methods: sort, unique, join, sum, minmax, count, groupby,
-  frequencies, are_distinct, nth, sliding_window,  and other popular algorithms.
+- Self-made range-adapters that don't mutate the stored range and can
+  have chained method calls!
+  Reference methods: iota (with custom step), sort, unique, join, sum, minmax,
+  count, groupby, frequencies, are_distinct, nth, sliding_window,  and other
+  popular algorithms.
   Take inspiration from Java Stream API, python itertools, toolz, topk, etc.
-  Probably make this thing heap-allocated
 - Write down thiw tip in my cheatsheets: https://stackoverflow.com/a/599416/17549962
   (`:%norm A \` and `:%norm I- `)
+- More reflection for aggregates?

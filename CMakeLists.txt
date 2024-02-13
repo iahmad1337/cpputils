@@ -34,11 +34,17 @@ if (CPPUTILS_ENABLE_TESTING)
         SRCS test/test_meta.cc
     )
 
+    add_basic_executable(
+        NAME test_reflect
+        SRCS test/test_reflect.cc
+    )
+
     link_to_all(
         TARGETS
             test_string_utils
             test_itertools
             test_meta
+            test_reflect
         DEPS
             cpputils::cpputils
             GTest::gtest_main
