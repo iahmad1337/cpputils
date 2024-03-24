@@ -38,6 +38,7 @@ the code here
 - There are not enough `std::forward`s and sometimes I don't even know if I need
   to use it.
 - `platform.hh` - platform-dependent functionality
+- Python script + library for embedding of binary resources: https://stackoverflow.com/questions/11813271/embed-resources-eg-shader-code-images-into-executable-library-with-cmake
 
 ## utils::math
 - Matrices that are stored in blocks
